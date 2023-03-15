@@ -1,7 +1,10 @@
+import json
 import discord
 import openai
 from discord.ext import commands
 from collections import defaultdict
+
+from Kook_Bot import MAX_HISTORY_LENGTH
 
 # Replace 'your_bot_token_here' with your actual Discord bot token
 TOKEN = 'MTA4NTQ2MDY2ODY3ODk0Mjc2MQ.GBlV4m.m7PHq0HCXMcCrdbyBSvlsiOmJgAh54Ycs5Uts8'
@@ -34,6 +37,11 @@ async def generate_response_new(user_id, prompt):
     if not conversation_history:
         conversation_history.append({"role": "system", "content": f"You are a helpful assistant with name {ai_name}."})
     conversation_history.append({"role": "user", "content": prompt})
+    # Check if the conversation_history is too long
+    while len(conversation_history_str) > MAX_HISTORY_LENGTH:
+        # Remove the oldest message until the conversation_history fits within the token limit
+        conversation_history.pop(0)
+        conversation_history_str = json.dumps(conversation_history)
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
